@@ -28,55 +28,10 @@
 #include <string.h>
 #include <stdio.h>
 
-/*
- * Please do not change this list, it is used to initialize the object
- * list in this order to match the FC_foo_OBJECT constants. Those
- * constants are written into cache files.
- */
-
 static const FcObjectType _FcBaseObjectTypes[] = {
-    { FC_FAMILY,	FcTypeString, },    /* 1 */
-    { FC_FAMILYLANG,	FcTypeString, },
-    { FC_STYLE,		FcTypeString, },
-    { FC_STYLELANG,	FcTypeString, },
-    { FC_FULLNAME,	FcTypeString, },
-    { FC_FULLNAMELANG,	FcTypeString, },
-    { FC_SLANT,		FcTypeInteger, },
-    { FC_WEIGHT,	FcTypeInteger, },
-    { FC_WIDTH,		FcTypeInteger, },
-    { FC_SIZE,		FcTypeDouble, },
-    { FC_ASPECT,	FcTypeDouble, },
-    { FC_PIXEL_SIZE,	FcTypeDouble, },
-    { FC_SPACING,	FcTypeInteger, },
-    { FC_FOUNDRY,	FcTypeString, },
-    { FC_ANTIALIAS,	FcTypeBool, },
-    { FC_HINT_STYLE,    FcTypeInteger, },
-    { FC_HINTING,	FcTypeBool, },
-    { FC_VERTICAL_LAYOUT,   FcTypeBool, },
-    { FC_AUTOHINT,	FcTypeBool, },
-    { FC_GLOBAL_ADVANCE,    FcTypeBool, },	/* deprecated */
-    { FC_FILE,		FcTypeString, },
-    { FC_INDEX,		FcTypeInteger, },
-    { FC_RASTERIZER,	FcTypeString, },
-    { FC_OUTLINE,	FcTypeBool, },
-    { FC_SCALABLE,	FcTypeBool, },
-    { FC_DPI,		FcTypeDouble },
-    { FC_RGBA,		FcTypeInteger, },
-    { FC_SCALE,		FcTypeDouble, },
-    { FC_MINSPACE,	FcTypeBool, },
-    { FC_CHAR_WIDTH,	FcTypeInteger },
-    { FC_CHAR_HEIGHT,	FcTypeInteger },
-    { FC_MATRIX,	FcTypeMatrix },
-    { FC_CHARSET,	FcTypeCharSet },
-    { FC_LANG,		FcTypeLangSet },
-    { FC_FONTVERSION,	FcTypeInteger },
-    { FC_CAPABILITY,	FcTypeString },
-    { FC_FONTFORMAT,	FcTypeString },
-    { FC_EMBOLDEN,	FcTypeBool },
-    { FC_EMBEDDED_BITMAP,   FcTypeBool },
-    { FC_DECORATIVE,	FcTypeBool },
-    { FC_LCD_FILTER,	FcTypeInteger }, /* 41 */
-    { FC_NAMELANG,	FcTypeString }, /* 42 */
+#define FC_OBJECT(NAME, Type) { FC_##NAME, Type },
+#include "fcobjs.h"
+#undef FC_OBJECT
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _FcBaseObjectTypes / sizeof _FcBaseObjectTypes[0])

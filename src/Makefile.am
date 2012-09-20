@@ -117,6 +117,7 @@ libfontconfig_la_SOURCES = \
 	fcmatch.c \
 	fcmatrix.c \
 	fcname.c \
+	fcobjs.h \
 	fcpat.c \
 	fcserialize.c \
 	fcstat.c \
