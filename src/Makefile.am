@@ -21,6 +21,8 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 
+EXTRA_DIST =
+
 if OS_WIN32
 
 export_symbols = -export-symbols fontconfig.def
@@ -78,7 +80,7 @@ INCLUDES = 						\
 	-DFC_CACHEDIR='"$(FC_CACHEDIR)"'                \
 	-DFONTCONFIG_PATH='"$(BASECONFIGDIR)"'
 
-EXTRA_DIST = makealias
+EXTRA_DIST += makealias
 
 noinst_HEADERS=fcint.h fcftint.h fcdeprecate.h
 
@@ -88,7 +90,8 @@ BUILT_SOURCES = $(ALIAS_FILES) \
 	../fc-case/fccase.h \
 	../fc-glyphname/fcglyphname.h \
 	../fc-lang/fclang.h \
-	fcobjshash.h
+	fcobjshash.h \
+	fcobjshash.gperf
 
 noinst_PROGRAMS = fcarch
 
@@ -111,9 +114,10 @@ fcobjshash.h: fcobjshash.gperf
 	$(AM_V_GEN) $(top_srcdir)/missing --run gperf -m 100 $< > $@.tmp && \
 	mv -f $@.tmp $@
 
-EXTRA_DIST = \
+EXTRA_DIST += \
 	fcobjshash.gperf.h \
-	fcobjshash.gperf
+	fcobjshash.gperf \
+	fcobjshash.h
 
 libfontconfig_la_SOURCES = \
 	fcarch.h \
@@ -178,7 +182,7 @@ fcftaliastail.h: fcftalias.h
 fcftalias.h: $(top_srcdir)/src/makealias $(PUBLIC_FT_FILES)
 	$(AM_V_GEN) sh $(top_srcdir)/src/makealias "$(top_srcdir)/src" fcftalias.h fcftaliastail.h $(PUBLIC_FT_FILES)
 
-CLEANFILES = $(ALIAS_FILES)
+CLEANFILES = $(ALIAS_FILES) fontconfig.def
 
 fontconfig.def: $(PUBLIC_FILES) $(PUBLIC_FT_FILES)
 	echo Generating $@
