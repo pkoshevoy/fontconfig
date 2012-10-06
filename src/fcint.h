@@ -870,12 +870,6 @@ FcObjectName (FcObject object);
 FcPrivate FcObjectSet *
 FcObjectGetSet (void);
 
-FcPrivate FcBool
-FcObjectInit (void);
-
-FcPrivate void
-FcObjectFini (void);
-
 #define FcObjectCompare(a, b)	((int) a - (int) b)
 
 /* fcpat.c */
@@ -1066,5 +1060,10 @@ FcStrSerializeAlloc (FcSerialize *serialize, const FcChar8 *str);
 
 FcPrivate FcChar8 *
 FcStrSerialize (FcSerialize *serialize, const FcChar8 *str);
+
+/* fcobjs.c */
+
+FcPrivate int
+FcObjectLookupIdByName (const char *str);
 
 #endif /* _FC_INT_H_ */
