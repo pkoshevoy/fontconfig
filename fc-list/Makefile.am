@@ -57,3 +57,5 @@ else
 all-local:
 clean-local:
 endif
+
+-include $(top_srcdir)/git.mk

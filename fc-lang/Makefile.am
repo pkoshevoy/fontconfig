@@ -309,3 +309,5 @@ ORTH = \
 	doi.orth \
 	mni.orth
 #	^-------------- Add new orth files here
+
+-include $(top_srcdir)/git.mk
