@@ -125,7 +125,7 @@ FcObjectName (FcObject object)
     return NULL;
 }
 
-static const FcConstant _FcBaseConstants[] = {
+static const FcConstant FcConstants[] = {
     { (FcChar8 *) "thin",	    "weight",   FC_WEIGHT_THIN, },
     { (FcChar8 *) "extralight",	    "weight",   FC_WEIGHT_EXTRALIGHT, },
     { (FcChar8 *) "ultralight",	    "weight",   FC_WEIGHT_EXTRALIGHT, },
@@ -189,7 +189,7 @@ static const FcConstant _FcBaseConstants[] = {
     { (FcChar8 *) "lcdlegacy",	    "lcdfilter",    FC_LCD_LEGACY },
 };
 
-#define NUM_FC_CONSTANTS   (sizeof _FcBaseConstants/sizeof _FcBaseConstants[0])
+#define NUM_FC_CONSTANTS   (sizeof FcConstants/sizeof FcConstants[0])
 
 FcBool
 FcNameRegisterConstants (const FcConstant *consts, int nconsts)
@@ -211,8 +211,8 @@ FcNameGetConstant (const FcChar8 *string)
     int	    i;
 
     for (i = 0; i < NUM_FC_CONSTANTS; i++)
-	if (!FcStrCmpIgnoreCase (string, _FcBaseConstants[i].name))
-	    return &_FcBaseConstants[i];
+	if (!FcStrCmpIgnoreCase (string, FcConstants[i].name))
+	    return &FcConstants[i];
 
     return 0;
 }
