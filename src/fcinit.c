@@ -132,17 +132,7 @@ FcInitLoadConfigAndFonts (void)
 FcBool
 FcInit (void)
 {
-    FcConfig	*config;
-
-    if (_fcConfig)
-	return FcTrue;
-    config = FcInitLoadConfigAndFonts ();
-    if (!config)
-	return FcFalse;
-    FcConfigSetCurrent (config);
-    if (FcDebug() & FC_DBG_MEMORY)
-	FcMemReport ();
-    return FcTrue;
+    return FcConfigInit ();
 }
 
 /*
@@ -151,9 +141,7 @@ FcInit (void)
 void
 FcFini (void)
 {
-    if (_fcConfig)
-	FcConfigDestroy (_fcConfig);
-
+    FcConfigFini ();
     FcCacheFini ();
     FcDefaultFini ();
     if (FcDebug() & FC_DBG_MEMORY)
