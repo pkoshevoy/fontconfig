@@ -40,6 +40,7 @@
 #endif
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stddef.h>
@@ -142,6 +143,8 @@ extern pfnSHGetFolderPathA pSHGetFolderPathA;
 #define FcPrivate
 #endif
 
+FC_ASSERT_STATIC (sizeof (FcRef) == sizeof (int));
+
 typedef enum _FcValueBinding {
     FcValueBindingWeak, FcValueBindingStrong, FcValueBindingSame
 } FcValueBinding;
@@ -222,7 +225,7 @@ struct _FcPattern {
     int		    num;
     int		    size;
     intptr_t	    elts_offset;
-    int		    ref;
+    FcRef	    ref;
 };
 
 #define FcPatternElts(p)	FcOffsetMember(p,elts_offset,FcPatternElt)
@@ -319,7 +322,7 @@ typedef struct _FcCharLeaf {
 } FcCharLeaf;
 
 struct _FcCharSet {
-    int		    ref;	/* reference count */
+    FcRef	    ref;	/* reference count */
     int		    num;	/* size of leaves and numbers arrays */
     intptr_t	    leaves_offset;
     intptr_t	    numbers_offset;
@@ -332,7 +335,7 @@ struct _FcCharSet {
 #define FcCharSetNumbers(c)	FcOffsetMember(c,numbers_offset,FcChar16)
 
 struct _FcStrSet {
-    int		    ref;	/* reference count */
+    FcRef	    ref;	/* reference count */
     int		    num;
     int		    size;
     FcChar8	    **strs;
@@ -520,7 +523,7 @@ struct _FcConfig {
     time_t	rescanTime;	    /* last time information was scanned */
     int		rescanInterval;	    /* interval between scans */
 
-    int		ref;                /* reference count */
+    FcRef	ref;                /* reference count */
 
     FcExprPage *expr_pool;	    /* pool of FcExpr's */
 };
@@ -546,6 +549,17 @@ typedef struct _FcStatFS    FcStatFS;
 struct _FcStatFS {
     FcBool is_remote_fs;
     FcBool is_mtime_broken;
+};
+
+typedef struct _FcValuePromotionBuffer FcValuePromotionBuffer;
+
+struct _FcValuePromotionBuffer {
+  union {
+    double d;
+    int i;
+    long l;
+    char c[256]; /* Enlarge as needed */
+  } u;
 };
 
 /* fcblanks.c */
@@ -825,7 +839,7 @@ FcPrivate FcLangResult
 FcLangCompare (const FcChar8 *s1, const FcChar8 *s2);
 
 FcPrivate FcLangSet *
-FcLangSetPromote (const FcChar8 *lang);
+FcLangSetPromote (const FcChar8 *lang, FcValuePromotionBuffer *buf);
 
 FcPrivate FcLangSet *
 FcNameParseLangSet (const FcChar8 *string);

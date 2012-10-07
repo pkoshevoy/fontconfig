@@ -33,6 +33,8 @@
 #include <windows.h>
 #endif
 
+/* Objects MT-safe for readonly access. */
+
 FcChar8 *
 FcStrCopy (const FcChar8 *s)
 {
@@ -1088,7 +1090,7 @@ FcStrSetCreate (void)
     if (!set)
 	return 0;
     FcMemAlloc (FC_MEM_STRSET, sizeof (FcStrSet));
-    set->ref = 1;
+    FcRefInit (&set->ref, 1);
     set->num = 0;
     set->size = 0;
     set->strs = 0;
@@ -1244,20 +1246,20 @@ FcStrSetDel (FcStrSet *set, const FcChar8 *s)
 void
 FcStrSetDestroy (FcStrSet *set)
 {
-    if (--set->ref == 0)
-    {
-	int	i;
+    int	i;
 
-	for (i = 0; i < set->num; i++)
-	    FcStrFree (set->strs[i]);
-	if (set->strs)
-	{
-	    FcMemFree (FC_MEM_STRSET, (set->size + 1) * sizeof (FcChar8 *));
-	    free (set->strs);
-	}
-	FcMemFree (FC_MEM_STRSET, sizeof (FcStrSet));
-	free (set);
+    if (FcRefDec (&set->ref) != 1)
+	return;
+
+    for (i = 0; i < set->num; i++)
+	FcStrFree (set->strs[i]);
+    if (set->strs)
+    {
+	FcMemFree (FC_MEM_STRSET, (set->size + 1) * sizeof (FcChar8 *));
+	free (set->strs);
     }
+    FcMemFree (FC_MEM_STRSET, sizeof (FcStrSet));
+    free (set);
 }
 
 FcStrList *
@@ -1270,7 +1272,7 @@ FcStrListCreate (FcStrSet *set)
 	return 0;
     FcMemAlloc (FC_MEM_STRLIST, sizeof (FcStrList));
     list->set = set;
-    set->ref++;
+    FcRefInc (&set->ref);
     list->n = 0;
     return list;
 }

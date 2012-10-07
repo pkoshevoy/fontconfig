@@ -95,7 +95,7 @@ FcConfigCreate (void)
 
     config->expr_pool = NULL;
 
-    config->ref = 1;
+    FcRefInit (&config->ref, 1);
 
     return config;
 
@@ -225,7 +225,7 @@ FcConfigReference (FcConfig *config)
 	    return 0;
     }
 
-    config->ref++;
+    FcRefInc (&config->ref);
 
     return config;
 }
@@ -236,7 +236,7 @@ FcConfigDestroy (FcConfig *config)
     FcSetName	set;
     FcExprPage	*page;
 
-    if (--config->ref > 0)
+    if (FcRefDec (&config->ref) != 1)
 	return;
 
     if (config == _fcConfig)
@@ -669,7 +669,7 @@ typedef struct _FcSubState {
 } FcSubState;
 
 static FcValue
-FcConfigPromote (FcValue v, FcValue u)
+FcConfigPromote (FcValue v, FcValue u, FcValuePromotionBuffer *buf)
 {
     if (v.type == FcTypeInteger)
     {
@@ -683,7 +683,8 @@ FcConfigPromote (FcValue v, FcValue u)
     }
     else if (v.type == FcTypeString && u.type == FcTypeLangSet)
     {
-	v.u.l = FcLangSetPromote (v.u.s);
+	assert (buf != NULL);
+	v.u.l = FcLangSetPromote (v.u.s, buf);
 	v.type = FcTypeLangSet;
     }
     return v;
@@ -699,9 +700,10 @@ FcConfigCompareValue (const FcValue	*left_o,
     FcBool	ret = FcFalse;
     FcOp	op = FC_OP_GET_OP (op_);
     int		flags = FC_OP_GET_FLAGS (op_);
+    FcValuePromotionBuffer buf1, buf2;
 
-    left = FcConfigPromote (left, right);
-    right = FcConfigPromote (right, left);
+    left = FcConfigPromote (left, right, &buf1);
+    right = FcConfigPromote (right, left, &buf2);
     if (left.type == right.type)
     {
 	switch (left.type) {
@@ -964,8 +966,8 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
     case FcOpDivide:
 	vl = FcConfigEvaluate (p, e->u.tree.left);
 	vr = FcConfigEvaluate (p, e->u.tree.right);
-	vl = FcConfigPromote (vl, vr);
-	vr = FcConfigPromote (vr, vl);
+	vl = FcConfigPromote (vl, vr, NULL);
+	vr = FcConfigPromote (vr, vl, NULL);
 	if (vl.type == vr.type)
 	{
 	    switch (vl.type) {
