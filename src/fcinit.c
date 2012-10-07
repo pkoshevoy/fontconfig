@@ -239,12 +239,12 @@ static struct {
     { "sharedstr" },
 };
 
-static int  FcAllocCount, FcAllocMem;
-static int  FcFreeCount, FcFreeMem;
+static int  FcAllocCount, FcAllocMem; /* MT-dontcare */
+static int  FcFreeCount, FcFreeMem; /* MT-dontcare */
 
-static int  FcMemNotice = 1*1024*1024;
+static const int  FcMemNotice = 1*1024*1024;
 
-static int  FcAllocNotify, FcFreeNotify;
+static int  FcAllocNotify, FcFreeNotify; /* MT-dontcare */
 
 void
 FcMemReport (void)
