@@ -24,8 +24,6 @@
 
 #include "fcint.h"
 #include <math.h>
-#include <stdlib.h>
-#include <ctype.h>
 
 const FcMatrix    FcIdentityMatrix = { 1, 0, 0, 1 };
 

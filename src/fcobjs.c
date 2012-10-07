@@ -26,8 +26,6 @@
 
 #include "fcobjshash.h"
 
-#include <string.h>
-
 int
 FcObjectLookupIdByName (const char *str)
 {

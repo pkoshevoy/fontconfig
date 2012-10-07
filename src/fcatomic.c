@@ -51,9 +51,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <time.h>
 
 #ifdef _WIN32
 #define mkdir(path,mode) _mkdir(path)

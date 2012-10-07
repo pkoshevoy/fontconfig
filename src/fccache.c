@@ -25,8 +25,6 @@
 #endif
 #include "fcint.h"
 #include "fcarch.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <string.h>

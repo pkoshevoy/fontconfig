@@ -23,9 +23,6 @@
  */
 
 #include "fcint.h"
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
 #ifdef HAVE_REGEX_H
 #include <regex.h>
 #endif

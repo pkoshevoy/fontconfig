@@ -23,8 +23,6 @@
  */
 
 #include "fcint.h"
-#include <stdlib.h>
-#include <string.h>
 #include <stdarg.h>
 
 

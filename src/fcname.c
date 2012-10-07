@@ -23,10 +23,6 @@
  */
 
 #include "fcint.h"
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 
 static const FcObjectType FcObjects[] = {
 #define FC_OBJECT(NAME, Type) { FC_##NAME, Type },

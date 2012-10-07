@@ -23,7 +23,6 @@
  */
 
 #include "fcint.h"
-#include <stdlib.h>
 
 static FcConfig *
 FcInitFallbackConfig (void)

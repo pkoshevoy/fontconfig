@@ -23,8 +23,6 @@
  */
 
 #include "fcint.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 static void
 _FcValuePrint (const FcValue v)

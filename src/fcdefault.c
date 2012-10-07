@@ -23,7 +23,6 @@
  */
 
 #include "fcint.h"
-#include <string.h>
 
 static const struct {
     FcObject	field;
