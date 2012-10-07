@@ -110,12 +110,12 @@ FcDefaultFini (void)
     FcStrSet *langs;
 
     lang = fc_atomic_ptr_get (&default_lang);
-    if (fc_atomic_ptr_cmpexch (&default_lang, lang, NULL)) {
+    if (lang && fc_atomic_ptr_cmpexch (&default_lang, lang, NULL)) {
 	free (lang);
     }
 
     langs = fc_atomic_ptr_get (&default_langs);
-    if (fc_atomic_ptr_cmpexch (&default_langs, langs, NULL)) {
+    if (langs && fc_atomic_ptr_cmpexch (&default_langs, langs, NULL)) {
 	FcRefInit (&langs->ref, 1);
 	FcStrSetDestroy (langs);
     }
