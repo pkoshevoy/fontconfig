@@ -1245,6 +1245,10 @@ FcStrSetDestroy (FcStrSet *set)
 {
     int	i;
 
+    /* We rely on this in FcGetDefaultLangs for caching. */
+    if (FcRefIsConst (&set->ref))
+	return;
+
     if (FcRefDec (&set->ref) != 1)
 	return;
 

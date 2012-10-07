@@ -155,6 +155,7 @@ FcFini (void)
 	FcConfigDestroy (_fcConfig);
 
     FcCacheFini ();
+    FcDefaultFini ();
     if (FcDebug() & FC_DBG_MEMORY)
 	FcMemReport ();
 }
