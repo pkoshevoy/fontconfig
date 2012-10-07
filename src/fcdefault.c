@@ -118,7 +118,6 @@ FcDefaultFini (void)
     if (fc_atomic_ptr_cmpexch (&default_langs, langs, NULL)) {
 	FcRefInit (&langs->ref, 1);
 	FcStrSetDestroy (langs);
-	langs = NULL;
     }
 }
 
