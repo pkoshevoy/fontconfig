@@ -65,7 +65,7 @@ FcCacheIsMmapSafe (int fd)
     } status;
     static void *static_status;
 
-    status = (int) fc_atomic_ptr_get (&static_status);
+    status = (intptr_t) fc_atomic_ptr_get (&static_status);
 
     if (status == MMAP_NOT_INITIALIZED)
     {
@@ -231,7 +231,7 @@ typedef struct _FcCacheSkip FcCacheSkip;
 
 struct _FcCacheSkip {
     FcCache	    *cache;
-    int		    ref;
+    FcRef	    ref;
     intptr_t	    size;
     dev_t	    cache_dev;
     ino_t	    cache_ino;
@@ -366,7 +366,7 @@ FcCacheInsert (FcCache *cache, struct stat *cache_stat)
 
     s->cache = cache;
     s->size = cache->size;
-    s->ref = 1;
+    FcRefInit (&s->ref, 1);
     if (cache_stat)
     {
 	s->cache_dev = cache_stat->st_dev;
@@ -449,7 +449,7 @@ FcCacheFindByStat (struct stat *cache_stat)
 	    s->cache_ino == cache_stat->st_ino &&
 	    s->cache_mtime == cache_stat->st_mtime)
 	{
-	    s->ref++;
+	    FcRefInc (&s->ref);
 	    return s->cache;
 	}
     return NULL;
@@ -479,7 +479,7 @@ FcCacheObjectReference (void *object)
     FcCacheSkip *skip = FcCacheFindByAddr (object);
 
     if (skip)
-	skip->ref++;
+	FcRefInc (&skip->ref);
 }
 
 void
@@ -489,8 +489,7 @@ FcCacheObjectDereference (void *object)
 
     if (skip)
     {
-	skip->ref--;
-	if (skip->ref <= 0)
+	if (FcRefDec (&skip->ref) <= 1)
 	    FcDirCacheDispose (skip->cache);
     }
 }
@@ -616,7 +615,7 @@ FcDirCacheReference (FcCache *cache, int nref)
     FcCacheSkip *skip = FcCacheFindByAddr (cache);
 
     if (skip)
-	skip->ref += nref;
+	FcRefAdd (&skip->ref, nref);
 }
 
 void
