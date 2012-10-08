@@ -63,7 +63,7 @@ retry:
 FcBool
 FcConfigInit (void)
 {
-  return FcConfigEnsure ? FcTrue : FcFalse;
+  return FcConfigEnsure () ? FcTrue : FcFalse;
 }
 
 void
