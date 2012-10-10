@@ -246,6 +246,7 @@ struct _FcCacheSkip {
 
 #define FC_CACHE_MAX_LEVEL  16
 
+/* Protected by cache_lock below */
 static FcCacheSkip	*fcCacheChains[FC_CACHE_MAX_LEVEL];
 static int		fcCacheMaxLevel;
 
@@ -381,6 +382,8 @@ FcCacheInsert (FcCache *cache, struct stat *cache_stat)
     FcCacheSkip    *s, **next;
     int		    i, level;
 
+    lock_cache ();
+
     /*
      * Find links along each chain
      */
@@ -432,11 +435,13 @@ FcCacheInsert (FcCache *cache, struct stat *cache_stat)
 	s->next[i] = *update[i];
 	*update[i] = s;
     }
+
+    unlock_cache ();
     return FcTrue;
 }
 
 static FcCacheSkip *
-FcCacheFindByAddr (void *object)
+FcCacheFindByAddrUnlocked (void *object)
 {
     int	    i;
     FcCacheSkip    **next = fcCacheChains;
@@ -457,6 +462,16 @@ FcCacheFindByAddr (void *object)
     return NULL;
 }
 
+static FcCacheSkip *
+FcCacheFindByAddr (void *object)
+{
+    FcCacheSkip *ret;
+    lock_cache ();
+    ret = FcCacheFindByAddrUnlocked (object);
+    unlock_cache ();
+    return ret;
+}
+
 static void
 FcCacheRemove (FcCache *cache)
 {
@@ -467,6 +482,7 @@ FcCacheRemove (FcCache *cache)
     /*
      * Find links along each chain
      */
+    lock_cache ();
     next = fcCacheChains;
     for (i = fcCacheMaxLevel; --i >= 0; )
     {
@@ -480,6 +496,7 @@ FcCacheRemove (FcCache *cache)
 	*update[i] = s->next[i];
     while (fcCacheMaxLevel > 0 && fcCacheChains[fcCacheMaxLevel - 1] == NULL)
 	fcCacheMaxLevel--;
+    unlock_cache ();
     free (s);
 }
 
@@ -488,14 +505,17 @@ FcCacheFindByStat (struct stat *cache_stat)
 {
     FcCacheSkip	    *s;
 
+    lock_cache ();
     for (s = fcCacheChains[0]; s; s = s->next[0])
 	if (s->cache_dev == cache_stat->st_dev &&
 	    s->cache_ino == cache_stat->st_ino &&
 	    s->cache_mtime == cache_stat->st_mtime)
 	{
 	    FcRefInc (&s->ref);
+	    unlock_cache ();
 	    return s->cache;
 	}
+    unlock_cache ();
     return NULL;
 }
 
@@ -985,13 +1005,16 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
      * new cache file is not read again.  If it's large, we don't do that
      * such that we reload it, using mmap, which is shared across processes.
      */
-    if (cache->size < FC_CACHE_MIN_MMAP &&
-	(skip = FcCacheFindByAddr (cache)) &&
-	FcStat (cache_hashed, &cache_stat))
+    if (cache->size < FC_CACHE_MIN_MMAP && FcStat (cache_hashed, &cache_stat))
     {
-	skip->cache_dev = cache_stat.st_dev;
-	skip->cache_ino = cache_stat.st_ino;
-	skip->cache_mtime = cache_stat.st_mtime;
+	lock_cache ();
+	if (skip = FcCacheFindByAddrUnlocked (cache))
+	{
+	    skip->cache_dev = cache_stat.st_dev;
+	    skip->cache_ino = cache_stat.st_ino;
+	    skip->cache_mtime = cache_stat.st_mtime;
+	}
+	unlock_cache ();
     }
 
     FcStrFree (cache_hashed);
