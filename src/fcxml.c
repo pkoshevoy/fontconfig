@@ -25,8 +25,9 @@
 #include "fcint.h"
 #include <fcntl.h>
 #include <stdarg.h>
+#ifdef HAVE_DIRENT_H
 #include <dirent.h>
-
+#endif
 #ifdef ENABLE_LIBXML2
 
 #include <libxml/parser.h>
@@ -2764,6 +2765,7 @@ FcConfigParseAndLoadDir (FcConfig	*config,
 			 const FcChar8	*dir,
 			 FcBool		complain)
 {
+#ifdef HAVE_DIRENT_H
     DIR		    *d;
     struct dirent   *e;
     FcBool	    ret = FcTrue;
@@ -2771,7 +2773,7 @@ FcConfigParseAndLoadDir (FcConfig	*config,
     FcChar8	    *base;
     FcStrSet	    *files;
 
-    d = opendir ((char *) dir);
+    d = FcOpendir ((char *) dir);
     if (!d)
     {
 	if (complain)
@@ -2801,8 +2803,8 @@ FcConfigParseAndLoadDir (FcConfig	*config,
 
     if (FcDebug () & FC_DBG_CONFIG)
 	printf ("\tScanning config dir %s\n", dir);
-	
-    while (ret && (e = readdir (d)))
+
+    while (ret && (e = FcReaddir (d)))
     {
 	int d_len;
 #define TAIL	    ".conf"
@@ -2836,9 +2838,12 @@ bail3:
 bail2:
     free (file);
 bail1:
-    closedir (d);
+    FcClosedir (d);
 bail0:
     return ret || !complain;
+#else
+#error missing dirent.h
+#endif
 }
 
 #ifdef _WIN32
@@ -2908,7 +2913,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
     if (FcDebug () & FC_DBG_CONFIG)
 	printf ("\tLoading config file %s\n", filename);
 
-    fd = open ((char *) filename, O_RDONLY);
+    fd = FcOpen ((char *) filename, O_RDONLY);
     if (fd == -1) {
 	FcStrFree (filename);
 	goto bail0;

@@ -1747,7 +1747,7 @@ FcConfigFileExists (const FcChar8 *dir, const FcChar8 *file)
     strcat ((char *) path, (char *) file);
 
     FcMemAlloc (FC_MEM_STRING, osize);
-    if (access ((char *) path, R_OK) == 0)
+    if (FcAccess ((char *) path, R_OK) == 0)
 	return path;
 
     FcStrFree (path);

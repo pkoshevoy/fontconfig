@@ -131,7 +131,7 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
         cache_hashed = FcStrPlus (cache_dir, cache_base);
         if (!cache_hashed)
 	    break;
-	(void) unlink ((char *) cache_hashed);
+	(void) FcUnlink ((char *) cache_hashed);
 	FcStrFree (cache_hashed);
     }
     FcStrListDone (list);
@@ -150,7 +150,7 @@ FcDirCacheOpenFile (const FcChar8 *cache_file, struct stat *file_stat)
     if (FcStat (cache_file, file_stat) < 0)
         return -1;
 #endif
-    fd = open((char *) cache_file, O_RDONLY | O_BINARY);
+    fd = FcOpen ((char *) cache_file, O_RDONLY | O_BINARY);
     if (fd < 0)
 	return fd;
 #ifndef _WIN32
@@ -802,10 +802,6 @@ bail1:
 }
 
 
-#ifdef _WIN32
-#define mkdir(path,mode) _mkdir(path)
-#endif
-
 static FcBool
 FcMakeDirectory (const FcChar8 *dir)
 {
@@ -818,10 +814,10 @@ FcMakeDirectory (const FcChar8 *dir)
     parent = FcStrDirname (dir);
     if (!parent)
 	return FcFalse;
-    if (access ((char *) parent, F_OK) == 0)
-	ret = mkdir ((char *) dir, 0755) == 0 && chmod ((char *) dir, 0755) == 0;
-    else if (access ((char *) parent, F_OK) == -1)
-	ret = FcMakeDirectory (parent) && (mkdir ((char *) dir, 0755) == 0) && chmod ((char *) dir, 0755) == 0;
+    if (FcAccess ((char *) parent, F_OK) == 0)
+	ret = FcMkdir ((char *) dir, 0755) == 0 && FcChmod ((char *) dir, 0755) == 0;
+    else if (FcAccess ((char *) parent, F_OK) == -1)
+	ret = FcMakeDirectory (parent) && (FcMkdir ((char *) dir, 0755) == 0) && FcChmod ((char *) dir, 0755) == 0;
     else
 	ret = FcFalse;
     FcStrFree (parent);
@@ -853,7 +849,7 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
     if (!list)
 	return FcFalse;
     while ((test_dir = FcStrListNext (list))) {
-	if (access ((char *) test_dir, W_OK) == 0)
+	if (FcAccess ((char *) test_dir, W_OK) == 0)
 	{
 	    cache_dir = test_dir;
 	    break;
@@ -863,7 +859,7 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
 	    /*
 	     * If the directory doesn't exist, try to create it
 	     */
-	    if (access ((char *) test_dir, F_OK) == -1) {
+	    if (FcAccess ((char *) test_dir, F_OK) == -1) {
 		if (FcMakeDirectory (test_dir))
 		{
 		    cache_dir = test_dir;
@@ -875,7 +871,7 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
 	    /*
 	     * Otherwise, try making it writable
 	     */
-	    else if (chmod ((char *) test_dir, 0755) == 0)
+	    else if (FcChmod ((char *) test_dir, 0755) == 0)
 	    {
 		cache_dir = test_dir;
 		/* Try to create CACHEDIR.TAG too */
@@ -904,7 +900,7 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
     if (!FcAtomicLock (atomic))
 	goto bail3;
 
-    fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT | O_BINARY, 0666);
+    fd = FcOpen((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT | O_BINARY, 0666);
     if (fd == -1)
 	goto bail4;
 
@@ -978,23 +974,23 @@ FcDirCacheClean (const FcChar8 *cache_dir, FcBool verbose)
 	fprintf (stderr, "Fontconfig error: %s: out of memory\n", cache_dir);
 	return FcFalse;
     }
-    if (access ((char *) cache_dir, W_OK) != 0)
+    if (FcAccess ((char *) cache_dir, W_OK) != 0)
     {
 	if (verbose || FcDebug () & FC_DBG_CACHE)
 	    printf ("%s: not cleaning %s cache directory\n", cache_dir,
-		    access ((char *) cache_dir, F_OK) == 0 ? "unwritable" : "non-existent");
+		    FcAccess ((char *) cache_dir, F_OK) == 0 ? "unwritable" : "non-existent");
 	goto bail0;
     }
     if (verbose || FcDebug () & FC_DBG_CACHE)
 	printf ("%s: cleaning cache directory\n", cache_dir);
-    d = opendir ((char *) cache_dir);
+    d = FcOpendir ((char *) cache_dir);
     if (!d)
     {
 	perror ((char *) cache_dir);
 	ret = FcFalse;
 	goto bail0;
     }
-    while ((ent = readdir (d)))
+    while ((ent = FcReaddir (d)))
     {
 	FcChar8	*file_name;
 	const FcChar8	*target_dir;
@@ -1025,7 +1021,7 @@ FcDirCacheClean (const FcChar8 *cache_dir, FcBool verbose)
 	else
 	{
 	    target_dir = FcCacheDir (cache);
-	    if (stat ((char *) target_dir, &target_stat) < 0)
+	    if (FcStat (target_dir, &target_stat) < 0)
 	    {
 		if (verbose || FcDebug () & FC_DBG_CACHE)
 		    printf ("%s: %s: missing directory: %s \n",
@@ -1035,7 +1031,7 @@ FcDirCacheClean (const FcChar8 *cache_dir, FcBool verbose)
 	}
 	if (remove)
 	{
-	    if (unlink ((char *) file_name) < 0)
+	    if (FcUnlink ((char *) file_name) < 0)
 	    {
 		perror ((char *) file_name);
 		ret = FcFalse;
@@ -1045,7 +1041,7 @@ FcDirCacheClean (const FcChar8 *cache_dir, FcBool verbose)
         FcStrFree (file_name);
     }
 
-    closedir (d);
+    FcClosedir (d);
   bail0:
     FcStrFree (dir_base);
 
@@ -1368,7 +1364,7 @@ FcDirCacheCreateTagFile (const FcChar8 *cache_dir)
     if (!cache_dir)
 	return FcFalse;
 
-    if (access ((char *) cache_dir, W_OK) == 0)
+    if (FcAccess ((char *) cache_dir, W_OK) == 0)
     {
 	/* Create CACHEDIR.TAG */
 	cache_tag = FcStrPlus (cache_dir, (const FcChar8 *) FC_DIR_SEPARATOR_S "CACHEDIR.TAG");
@@ -1379,7 +1375,7 @@ FcDirCacheCreateTagFile (const FcChar8 *cache_dir)
 	    goto bail1;
 	if (!FcAtomicLock (atomic))
 	    goto bail2;
-	fd = open((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT, 0644);
+	fd = FcOpen((char *)FcAtomicNewFile (atomic), O_RDWR | O_CREAT, 0644);
 	if (fd == -1)
 	    goto bail3;
 	fp = fdopen(fd, "wb");

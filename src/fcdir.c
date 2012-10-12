@@ -168,7 +168,7 @@ FcDirScanConfig (FcFontSet	*set,
     if (FcDebug () & FC_DBG_SCAN)
 	printf ("\tScanning dir %s\n", dir);
 	
-    d = opendir ((char *) dir);
+    d = FcOpendir ((char *) dir);
     if (!d)
     {
 	/* Don't complain about missing directories */
@@ -183,7 +183,7 @@ FcDirScanConfig (FcFontSet	*set,
 	ret = FcFalse;
 	goto bail1;
     }
-    while ((e = readdir (d)))
+    while ((e = FcReaddir (d)))
     {
 	if (e->d_name[0] != '.' && strlen (e->d_name) < FC_MAX_FILE_LEN)
 	{
@@ -209,7 +209,7 @@ FcDirScanConfig (FcFontSet	*set,
 bail2:
     FcStrSetDestroy (files);
 bail1:
-    closedir (d);
+    FcClosedir (d);
 bail:
     if (file)
 	free (file);

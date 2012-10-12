@@ -41,7 +41,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stddef.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1106,5 +1108,22 @@ FcStrSerializeAlloc (FcSerialize *serialize, const FcChar8 *str);
 
 FcPrivate FcChar8 *
 FcStrSerialize (FcSerialize *serialize, const FcChar8 *str);
+
+/* a very thin portability layer */
+#define FcOpendir(x) opendir(x)
+#define FcReaddir(x) readdir(x)
+#define FcClosedir(x) closedir(x)
+
+#ifdef _WIN32
+#define FcMkdir(path, mode) _mkdir(path)
+#else
+#define FcMkdir(x, y) mkdir(x, y)
+#endif
+#define FcRmdir(x) rmdir(x)
+
+#define FcAccess(x, y) access(x, y)
+#define FcChmod(x, y) chmod(x, y)
+#define FcUnlink(x) unlink(x)
+#define FcOpen(x, ...) open(x, __VA_ARGS__)
 
 #endif /* _FC_INT_H_ */
