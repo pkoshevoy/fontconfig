@@ -74,6 +74,7 @@ typedef __int64 INT64;
  * just use the UTC timestamps from NTFS, converted to the Unix epoch.
  */
 
+# if !defined(_MSC_VER)
 int
 FcStat (const FcChar8 *file, struct stat *statb)
 {
@@ -120,6 +121,74 @@ FcStat (const FcChar8 *file, struct stat *statb)
 
     return 0;
 }
+
+# else /* _MSC_VER */
+
+static FcChar32
+FcStringHashW (const wchar_t * wstr)
+{
+    char * str = fc_utf16_to_utf8 (wstr);
+    FcChar32 ret = FcStringHash (str);
+    free (str);
+    return ret;
+}
+
+int
+FcStatW (const wchar_t *wfile, struct stat *statb)
+{
+    WIN32_FILE_ATTRIBUTE_DATA wfad;
+    wchar_t wfull_path_name[MAX_PATH];
+    wchar_t *wbasename;
+    DWORD rc;
+
+    if (!GetFileAttributesExW (wfile, GetFileExInfoStandard, &wfad))
+	return -1;
+
+    statb->st_dev = 0;
+
+    /* Calculate a pseudo inode number as a hash of the full path name.
+     * Call GetLongPathName() to get the spelling of the path name as it
+     * is on disk.
+     */
+    rc = GetFullPathNameW (wfile, MAX_PATH, wfull_path_name, &wbasename);
+    if (rc == 0 || rc > MAX_PATH)
+	return -1;
+
+    rc = GetLongPathNameW (wfull_path_name, wfull_path_name, MAX_PATH);
+    statb->st_ino = FcStringHashW (wfull_path_name);
+
+    statb->st_mode = _S_IREAD | _S_IWRITE;
+    statb->st_mode |= (statb->st_mode >> 3) | (statb->st_mode >> 6);
+
+    if (wfad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+	statb->st_mode |= _S_IFDIR;
+    else
+	statb->st_mode |= _S_IFREG;
+
+    statb->st_nlink = 1;
+    statb->st_uid = statb->st_gid = 0;
+    statb->st_rdev = 0;
+
+    if (wfad.nFileSizeHigh > 0)
+	return -1;
+    statb->st_size = wfad.nFileSizeLow;
+
+    statb->st_atime = (*(INT64 *)&wfad.ftLastAccessTime)/10000000 - EPOCH_OFFSET;
+    statb->st_mtime = (*(INT64 *)&wfad.ftLastWriteTime)/10000000 - EPOCH_OFFSET;
+    statb->st_ctime = statb->st_mtime;
+
+    return 0;
+}
+
+int
+FcStat (const FcChar8 *file_utf8, struct stat *statb)
+{
+    wchar_t *wfile = fc_utf8_to_utf16 (file_utf8);
+    int ret = FcStatW (wfile, statb);
+    free (wfile);
+    return ret;
+}
+# endif /* _MSC_VER */
 
 #else
 
