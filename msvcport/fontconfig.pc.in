@@ -1,0 +1,16 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+sysconfdir=${prefix}/etc
+localstatedir=${prefix}/var
+PACKAGE=fontconfig
+confdir=${sysconfdir}/fonts
+cachedir=WINDOWSTEMPDIR_FONTCONFIG_CACHE
+
+Name: Fontconfig
+Description: Font configuration and customization library
+Version: @FONTCONFIG_VERSION@
+Libs: -L${libdir} -lfontconfig
+Libs.private:  -L${libdir} -lexpat -L${libdir} -lfreetype -L${libdir} -liconv
+Cflags: -I${includedir}

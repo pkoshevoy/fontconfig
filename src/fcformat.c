@@ -566,7 +566,11 @@ interpret_count (FcFormatContext *c,
 	    count++;
     }
 
+#if defined(_WIN32) && defined(_MSC_VER)
+    _snprintf_s ((char *) buf_static, sizeof (buf_static), sizeof (buf_static), "%d", count);
+#else
     snprintf ((char *) buf_static, sizeof (buf_static), "%d", count);
+#endif
     FcStrBufString (buf, buf_static);
 
     return FcTrue;
